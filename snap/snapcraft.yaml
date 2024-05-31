@@ -1,0 +1,115 @@
+name: test-strict-confinement
+base: core20
+version: '0.1'
+summary: A SNAP to test the strict confinement mode.
+description: |
+  This is a SNAP to assist the checkbox to test the strict confinement mode.
+grade: stable
+confinement: strict
+
+# Un-mark this section if triggering a remote-build on your local host is needed.
+# architectures:
+#   - build-on: arm64
+#   - build-on: armhf
+#   - build-on: amd64
+
+plugs:
+  led1:
+    interface: bool-file
+  led2:
+    interface: bool-file
+  led3:
+    interface: bool-file
+  led4:
+    interface: bool-file
+  led5:
+    interface: bool-file
+  led6:
+    interface: bool-file
+  led7:
+    interface: bool-file
+  led8:
+    interface: bool-file
+  hardware-observe:
+    interface: hardware-observe
+  device-buttons:
+    interface: device-buttons
+  time-control:
+    interface: time-control
+  timeserver-control:
+    interface: timeserver-control
+  timezone-control:
+    interface: timezone-control
+  raw-usb:
+    interface: raw-usb
+  removable-media:
+    interface: removable-media
+  mount-control:
+    interface: mount-control
+    mount:
+    - what: /dev/mmcblk*
+      where: /mnt/**
+      type: [ext2, ext3, ext4, fat, ntfs, vfat]
+      options: [rw]
+  shutdown:
+    interface: shutdown
+  raw-volume:
+    interface: raw-volume
+  log-observe:
+    interface: log-observe
+
+apps:
+  warm-boot:
+    command-chain:
+      - bin/command-chain
+    command: bin/run_command.py warm_boot
+  cold-boot:
+    command-chain:
+      - bin/command-chain
+    command: bin/run_command.py cold_boot
+  run-watcher:
+    command-chain:
+      - bin/command-chain
+    command: bin/run_watcher.py
+  usb-read-write:
+    command-chain:
+      - bin/command-chain
+    command: bin/usb_read_write.py
+  thermal-test:
+    command-chain:
+      - bin/command-chain
+    command: bin/thermal_sensor_test.py
+  timedatectl-ntp:
+    command-chain:
+      - bin/command-chain
+    command: bin/timedatectl_test.py ntp
+  timedatectl-timezone:
+    command-chain:
+      - bin/command-chain
+    command: bin/timedatectl_test.py timezone
+
+assumes:
+- command-chain
+
+parts:
+  dump-scripts:
+    plugin: dump
+    source: bin/
+    organize:
+      '*': bin/
+  python-env:
+    plugin: python
+    stage-packages:
+      # actual requirements
+      - python3-systemd
+      # added to stage python:
+      - libpython3-stdlib
+      - libpython3.8-stdlib
+      - libpython3.8-minimal
+      - python3-pip
+      - python3-wheel
+      - python3-venv
+      - python3-minimal
+      - python3-distutils
+      - python3-pkg-resources
+      - python3.8-minimal

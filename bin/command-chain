@@ -1,0 +1,5 @@
+#!/bin/bash
+# Clean PYTHONHOME to avoid python fatal error while
+# running python in cross snap environment.
+export PYTHONHOME=""
+exec "$@"
