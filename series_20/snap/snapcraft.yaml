@@ -7,11 +7,6 @@ description: |
 grade: stable
 confinement: strict
 
-architectures:
-  - build-on: arm64
-  - build-on: armhf
-  - build-on: amd64
-
 plugs:
   led1:
     interface: bool-file
@@ -93,7 +88,7 @@ assumes:
 parts:
   dump-scripts:
     plugin: dump
-    source: bin/
+    source: ../bin/
     organize:
       '*': bin/
   python-env:
