@@ -54,13 +54,10 @@ def timedatectl_parser() -> Dict[str, str]:
         LOCAL_TIME: None,
     }
     output = run("timedatectl")
-    timezone_search = re.search(
-        r"Time zone:\s+(\S+)\s+\(.+\)", output
-    )
+    timezone_search = re.search(r"Time zone:\s+(\S+)\s+\(.+\)", output)
     ntp_search = re.search(r"NTP service:\s+(\S+)", output)
-    local_time_search = re.search(
-        r"Local time: \S+ (\d{4}-\d{2}-\d{2})", output
-    )
+    local_time_search = re.search(r"Local time: \S+ (\d{4}-\d{2}-\d{2})",
+                                  output)
     if timezone_search:
         result[TIME_ZONE] = timezone_search.group(1)
     if ntp_search:
@@ -201,6 +198,13 @@ def test_timezone(target_timezone):
         with TimeZoneRestore() as tzr:
             if tzr.restore_timezone in timezone_list:
                 timezone_list.remove(tzr.restore_timezone)
+                if tzr.restore_timezone == target_timezone:
+                    logging.info(
+                        "Current timezone is the same as target timezone %s",
+                        target_timezone,
+                    )
+                    logging.info("Will use default time zone %s",
+                                 timezone_list[-1])
             set_timezone(timezone_list[-1])
     except Exception as e:
         logging.error("Error during timezone test: %s", e)
@@ -210,9 +214,7 @@ def test_timezone(target_timezone):
 def test_ntp():
     mock_date = "2024-02-29"
     with NtpRestore():
-        logging.info(
-            "Attempting to set date to a mockup date %s", mock_date
-        )
+        logging.info("Attempting to set date to a mockup date %s", mock_date)
         timedatectl_set("set-time", mock_date)
         current_date = timedatectl_parser()[LOCAL_TIME]
         logging.info("Current date is %s", current_date)
@@ -246,9 +248,8 @@ class TimeZoneRestore:
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        logging.info(
-            "Restoring original timezone to %s", self.restore_timezone
-        )
+        logging.info("Restoring original timezone to %s",
+                     self.restore_timezone)
         set_timezone(self.restore_timezone)
         if exc_type:
             logging.error("An error occurred: %s", exc_value)
@@ -277,14 +278,12 @@ class NtpRestore:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Test system configuration tasks"
-    )
+        description="Test system configuration tasks")
     subparsers = parser.add_subparsers(
         dest="test", required=True, help="Test functions in timezone and ntp"
     )
-    timezone_subparser = subparsers.add_parser(
-        "timezone", help="Run timezone test"
-    )
+    timezone_subparser = subparsers.add_parser("timezone",
+                                               help="Run timezone test")
     timezone_subparser.add_argument(
         "-t",
         "--target",
