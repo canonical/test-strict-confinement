@@ -54,10 +54,11 @@ def timedatectl_parser() -> Dict[str, str]:
         LOCAL_TIME: None,
     }
     output = run("timedatectl")
-    timezone_search = re.search(r"Time zone:\s+(\S+)\s+\(.+\)", output)
+    timezone_search = re.search(r"Time zone: (\S+) \(.+\)", output)
     ntp_search = re.search(r"NTP service:\s+(\S+)", output)
-    local_time_search = re.search(r"Local time: \S+ (\d{4}-\d{2}-\d{2})",
-                                  output)
+    local_time_search = re.search(
+        r"Local time: \S+ (\d{4}-\d{2}-\d{2})", output
+    )
     if timezone_search:
         result[TIME_ZONE] = timezone_search.group(1)
     if ntp_search:
@@ -200,11 +201,10 @@ def test_timezone(target_timezone):
                 timezone_list.remove(tzr.restore_timezone)
                 if tzr.restore_timezone == target_timezone:
                     logging.info(
-                        "Current timezone is the same as target timezone %s",
-                        target_timezone,
+                        "Current timezone is the same as target timezone, "
+                        "so the timezone %s is used instead.",
+                        timezone_list[-1],
                     )
-                    logging.info("Will use default time zone %s",
-                                 timezone_list[-1])
             set_timezone(timezone_list[-1])
     except Exception as e:
         logging.error("Error during timezone test: %s", e)
@@ -248,8 +248,9 @@ class TimeZoneRestore:
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        logging.info("Restoring original timezone to %s",
-                     self.restore_timezone)
+        logging.info(
+            "Restoring original timezone to %s", self.restore_timezone
+        )
         set_timezone(self.restore_timezone)
         if exc_type:
             logging.error("An error occurred: %s", exc_value)
@@ -278,12 +279,14 @@ class NtpRestore:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Test system configuration tasks")
+        description="Test system configuration tasks"
+    )
     subparsers = parser.add_subparsers(
         dest="test", required=True, help="Test functions in timezone and ntp"
     )
-    timezone_subparser = subparsers.add_parser("timezone",
-                                               help="Run timezone test")
+    timezone_subparser = subparsers.add_parser(
+        "timezone", help="Run timezone test"
+    )
     timezone_subparser.add_argument(
         "-t",
         "--target",
