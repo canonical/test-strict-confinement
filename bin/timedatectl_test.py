@@ -54,12 +54,10 @@ def timedatectl_parser() -> Dict[str, str]:
         LOCAL_TIME: None,
     }
     output = run("timedatectl")
-    timezone_search = re.search(
-        r"Time zone:\s+(\S+)\s+\(.+\)", output
-    )
+    timezone_search = re.search(r"Time zone:\s+(\S+)\s+\(.+\)", output)
     ntp_search = re.search(r"NTP service:\s+(\S+)", output)
     local_time_search = re.search(
-        r"Local time: \S+ (\d{4}-\d{2}-\d{2})", output
+        r"Local time: \S+ (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})", output
     )
     if timezone_search:
         result[TIME_ZONE] = timezone_search.group(1)
@@ -67,6 +65,9 @@ def timedatectl_parser() -> Dict[str, str]:
         result[NTP] = ntp_search.group(1)
     if local_time_search:
         result[LOCAL_TIME] = local_time_search.group(1)
+    for key, value in result.items():
+        if value is None:
+            raise SystemError("Not able to get time date information!")
     return result
 
 
@@ -83,7 +84,7 @@ def timedatectl_set(func: str, arg: str) -> None:
     >>> time_set("set-ntp", "true")
     equal to command: timedatectl set-ntp true
     """
-    cmd = "timedatectl {} {}".format(func, arg)
+    cmd = 'timedatectl {} "{}"'.format(func, arg)
     run(cmd)
 
 
@@ -103,18 +104,31 @@ def run(cmd: str, timeout: int = 60) -> str:
     - TimeoutExpired: If the command does not complete within the timeout.
     - CalledProcessError: If the command exits with a non-zero status.
     """
-    process = sp.run(
-        shlex.split(cmd),
-        stdout=sp.PIPE,
-        stderr=sp.PIPE,
-        text=True,
-        timeout=timeout,
-    )
-    if process.returncode != 0:
-        logging.error("Return message: %s", process.stderr.strip())
-        raise SystemError("Command run failed")
-    else:
+    try:
+        process = sp.run(
+            shlex.split(cmd),
+            stdout=sp.PIPE,
+            stderr=sp.PIPE,
+            text=True,
+            timeout=timeout,
+        )
+        process.check_returncode()  # Check for non-zero exit code
         return process.stdout.strip()
+    except sp.TimeoutExpired:
+        logging.error("Command '%s' timed out after %s seconds", cmd, timeout)
+        raise SystemExit("Command timed out")
+    except sp.CalledProcessError as e:
+        logging.error(
+            "Command '%s' failed with return code %d", cmd, e.returncode
+        )
+        logging.error("Error message: %s", e.stderr)
+        raise SystemExit("Command failed with a non-zero exit code")
+    except FileNotFoundError:
+        logging.error("Command '%s' not found", cmd)
+        raise SystemExit("Command not found")
+    except Exception as e:
+        logging.error("An unexpected error occurred: %s", e)
+        raise SystemExit("An unexpected error occurred")
 
 
 def toggle_ntp(status: bool) -> None:
@@ -155,12 +169,7 @@ def toggle_ntp(status: bool) -> None:
     """
     expect_status = "active" if status else "inactive"
     logging.info("Attempting to toggle NTP service %s", expect_status)
-    try:
-        timedatectl_set("set-ntp", status)
-    except SystemError:
-        logging.error("Toggle NTP failed!")
-        raise SystemExit(1)
-
+    timedatectl_set("set-ntp", status)
     # Verify the state change
     if timedatectl_parser()[NTP] == expect_status:
         logging.info("Toggle NTP successed!")
@@ -174,16 +183,12 @@ def set_timezone(timezone: str) -> None:
     Test if timezone can be setup.
     """
     logging.info("Attempting to set timezone to %s", timezone)
-    try:
-        timedatectl_set("set-timezone", timezone)
-        current_timezone = timedatectl_parser()[TIME_ZONE]
-        logging.info("Current timezone is %s", current_timezone)
-        if current_timezone != timezone:
-            raise SystemError("Timezone setup failed!")
-        logging.info("Timezone setup succeed!")
-    except Exception as e:
-        logging.error(e)
-        raise SystemExit(1)
+    timedatectl_set("set-timezone", timezone)
+    current_timezone = timedatectl_parser()[TIME_ZONE]
+    logging.info("Current timezone is %s", current_timezone)
+    if current_timezone != timezone:
+        raise SystemError("Timezone setup failed!")
+    logging.info("Timezone setup succeed!")
 
 
 def test_timezone(target_timezone):
@@ -196,23 +201,17 @@ def test_timezone(target_timezone):
     timezone_list = ["UTC", "Asia/Taipei"]
     if target_timezone not in timezone_list:
         timezone_list.append(target_timezone)
-    try:
-        logging.info("Start to test timezone setting up")
-        with TimeZoneRestore() as tzr:
-            if tzr.restore_timezone in timezone_list:
-                timezone_list.remove(tzr.restore_timezone)
-            set_timezone(timezone_list[-1])
-    except Exception as e:
-        logging.error("Error during timezone test: %s", e)
-        raise SystemExit(1)
+    logging.info("Start to test timezone setting up")
+    with TimeZoneRestore() as tzr:
+        if tzr.restore_timezone in timezone_list:
+            timezone_list.remove(tzr.restore_timezone)
+        set_timezone(timezone_list[-1])
 
 
 def test_ntp():
-    mock_date = "2024-02-29"
+    mock_date = "2024-02-29 11:11:11"
     with NtpRestore():
-        logging.info(
-            "Attempting to set date to a mockup date %s", mock_date
-        )
+        logging.info("Attempting to set date to a mockup date %s", mock_date)
         timedatectl_set("set-time", mock_date)
         current_date = timedatectl_parser()[LOCAL_TIME]
         logging.info("Current date is %s", current_date)
