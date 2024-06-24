@@ -67,7 +67,7 @@ def timedatectl_parser() -> Dict[str, str]:
         result[LOCAL_TIME] = local_time_search.group(1)
     for key, value in result.items():
         if value is None:
-            raise SystemError("Not able to get time date information!")
+            raise SystemExit("Not able to get time date information!")
     return result
 
 
@@ -151,7 +151,7 @@ def toggle_ntp(status: bool) -> None:
       the operation instead.
 
     Raises:
-    - SystemError: If the command to toggle the NTP service fails for any
+    - SystemExit: If the command to toggle the NTP service fails for any
       reason, including execution errors from the underlying system command.
 
     Examples:
@@ -187,7 +187,7 @@ def set_timezone(timezone: str) -> None:
     current_timezone = timedatectl_parser()[TIME_ZONE]
     logging.info("Current timezone is %s", current_timezone)
     if current_timezone != timezone:
-        raise SystemError("Timezone setup failed!")
+        raise SystemExit("Timezone setup failed!")
     logging.info("Timezone setup succeed!")
 
 
