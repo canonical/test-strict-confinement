@@ -54,9 +54,7 @@ def timedatectl_parser() -> Dict[str, str]:
         LOCAL_TIME: None,
     }
     output = run("timedatectl")
-    timezone_search = re.search(
-        r"Time zone:\s+(\S+)\s+\(.+\)", output
-    )
+    timezone_search = re.search(r"Time zone:\s+(\S+)\s+\(.+\)", output)
     ntp_search = re.search(r"NTP service:\s+(\S+)", output)
     local_time_search = re.search(
         r"Local time: \S+ (\d{4}-\d{2}-\d{2})", output
@@ -210,9 +208,7 @@ def test_timezone(target_timezone):
 def test_ntp():
     mock_date = "2024-02-29"
     with NtpRestore():
-        logging.info(
-            "Attempting to set date to a mockup date %s", mock_date
-        )
+        logging.info("Attempting to set date to a mockup date %s", mock_date)
         timedatectl_set("set-time", mock_date)
         current_date = timedatectl_parser()[LOCAL_TIME]
         logging.info("Current date is %s", current_date)
