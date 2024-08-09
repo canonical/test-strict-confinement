@@ -112,9 +112,9 @@ class StorageWatcher:
         detected after ACTION_TIMEOUT secs
         """
         logger.error(
-            "no {} storage {} was reported in systemd journal".format(
-                self.args.storage_type, self.args.testcase
-            )
+            "no %s storage %s was reported in systemd journal",
+            self.args.storage_type,
+            self.args.testcase,
         )
         sys.exit(1)
 
@@ -376,7 +376,7 @@ def storage_info_helper(reserve, storage_type, mounted_partition=""):
     # backup the storage partition info
     if reserve and mounted_partition:
         logger.info(
-            "cache file {} is at: {}".format(file_name, plainbox_session_share)
+            "cache file %s is at: %s", file_name, plainbox_session_share
         )
         file_to_share = open(
             os.path.join(plainbox_session_share, file_name), "w"

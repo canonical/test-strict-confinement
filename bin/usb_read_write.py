@@ -123,9 +123,9 @@ def get_partition_info():
     except OSError as e:
         if e.errno == errno.ENOENT:
             logging.error(
-                "%s info file was not found. \
-                           Did the insertion test was run successfully?"
-                % USB_INSERT_INFO
+                "%s info file was not found. "
+                "Did the insertion test run successfully?",
+                USB_INSERT_INFO,
             )
         sys.exit(1)
     # TODO: need to be smarter
@@ -179,13 +179,14 @@ def mount_usb_storage(partition):
         # quit this script and return a non-zero value to plainbox
         if subprocess.call(["mount", device_to_mount, FOLDER_TO_MOUNT]):
             logging.error(
-                "mount %s on %s failed." % (device_to_mount, FOLDER_TO_MOUNT)
+                "mount %s on %s failed.", device_to_mount, FOLDER_TO_MOUNT
             )
             sys.exit(1)
         else:
             logging.debug(
-                "mount %s on %s successfully."
-                % (device_to_mount, FOLDER_TO_MOUNT)
+                "mount %s on %s successfully.",
+                device_to_mount,
+                FOLDER_TO_MOUNT,
             )
         yield
     finally:
@@ -234,7 +235,7 @@ def read_test_unit(random_source_file, idx=""):
     source_md5sum = process.communicate()[0].decode().split(" ")[0]
     logging.debug("%s %s (verified)" % (tfile_md5sum, path_random_file))
     logging.debug(
-        "%s %s (source)" % (source_md5sum, random_source_file.tfile.name)
+        "%s %s (source)", source_md5sum, random_source_file.tfile.name
     )
     # Clean the target file
     os.remove(path_random_file)
