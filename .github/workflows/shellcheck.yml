@@ -19,4 +19,7 @@ jobs:
         run: sudo apt-get install -y shellcheck
       - name: Run ShellCheck
         run: |
-          find . -name "*.sh" -print0 | xargs -0 shellcheck
+          sh_files=$(find . -name "*.sh")
+          if [ -n "$sh_files" ]; then
+            echo "$sh_files" | xargs shellcheck
+          fi
