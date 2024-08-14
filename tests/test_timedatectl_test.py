@@ -49,8 +49,9 @@ class TestTimedatectlFunctions(unittest.TestCase):
         with self.assertRaises(SystemError) as cm:
             timedatectl_test.timedatectl_parser()
 
-        self.assertEqual(str(cm.exception),
-                         "Not able to get time date information!")
+        self.assertEqual(
+            str(cm.exception), "Not able to get time date information!"
+        )
 
     @patch("timedatectl_test.run")
     def test_timedatectl_set(self, mock_run):
