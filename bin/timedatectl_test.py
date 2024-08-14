@@ -201,7 +201,7 @@ def test_timezone(target_timezone):
     timezone_list = ["UTC", "Asia/Taipei"]
     if target_timezone not in timezone_list:
         timezone_list.append(target_timezone)
-    logging.info("Start to test timezone setting up")
+    logging.info("Start to test timezone setting upasdfsdafdsfffffffffffffffffffffffffffffffffffffffffff")
     with TimeZoneRestore() as tzr:
         if tzr.restore_timezone in timezone_list:
             timezone_list.remove(tzr.restore_timezone)
