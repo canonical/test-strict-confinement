@@ -21,14 +21,14 @@ logging.basicConfig(
 
 class RunnableFunction:
     @staticmethod
-    def warm_boot(args):
+    def dbus_warm_boot(args):
         cmd = "dbus-send --system --dest=org.freedesktop.login1 --print-reply \
         /org/freedesktop/login1 org.freedesktop.login1.Manager.Reboot \
         boolean:true"
         run(cmd, args.timeout)
 
     @staticmethod
-    def cold_boot(args):
+    def dbus_cold_boot(args):
         cmd = "dbus-send --system --dest=org.freedesktop.login1 --print-reply \
         /org/freedesktop/login1 org.freedesktop.login1.Manager.PowerOff \
         boolean:true"
