@@ -53,14 +53,14 @@ plugs:
     interface: log-observe
 
 apps:
-  warm-boot:
+  dbus-warm-boot:
     command-chain:
       - bin/command-chain
-    command: bin/run_command.py warm_boot
-  cold-boot:
+    command: bin/run_command.py dbus_warm_boot
+  dbus-cold-boot:
     command-chain:
       - bin/command-chain
-    command: bin/run_command.py cold_boot
+    command: bin/run_command.py dbus_cold_boot
   run-watcher:
     command-chain:
       - bin/command-chain
