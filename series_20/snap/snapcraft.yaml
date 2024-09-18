@@ -1,6 +1,6 @@
 name: test-strict-confinement
 base: core20
-version: '0.1'
+version: '0.2'
 summary: A SNAP to test the strict confinement mode.
 description: |
   This is a SNAP to assist the checkbox to test the strict confinement mode.
